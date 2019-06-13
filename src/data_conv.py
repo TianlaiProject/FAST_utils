@@ -250,7 +250,7 @@ def get_pointing_meridian_scan(time, dec0, time_format='unix', feed_rotation=0):
                              11.393,  9.116,   6.838,   1.142])
 
     separation = np.sqrt(x_position ** 2 + y_position ** 2) * u.arcmin
-    position_angle  = np.arctan2(-x_position, y_position) * u.rad + 23.4 * u.deg
+    position_angle  = np.arctan2(x_position, -y_position) * u.rad + 23.4 * u.deg
     position_angle -= feed_rotation * u.deg
 
     _c = offset_by(c0[:, None], position_angle[None, :], separation[None, :])
