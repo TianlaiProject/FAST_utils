@@ -18,6 +18,7 @@ from scipy.signal import medfilt
 from scipy.ndimage import median_filter
 from scipy.signal import lombscargle
 import copy
+import gc
 
 
 _c_list = ["#1f77b4", "#ff7f0e", "#2ca02c", "0.2", "#d62728", "#9467bd",
@@ -74,6 +75,14 @@ def convert_to_tl(data_path, data_file, output_path, dec0, feed_rotation=0,
                 df.attrs['nfreq'] = nfreq
                 df.attrs['freqstart'] = fdata.freq[0]
                 df.attrs['freqstep'] = fdata.freq[1] - fdata.freq[0]
+
+                # get ra dec according to meridian scan
+                ra, dec = get_pointing_meridian_scan(fdata.time, dec0, 
+                        time_format='unix', feed_rotation=feed_rotation)
+
+                df['ns_on'] = fdata.cal_on
+                df['ns_on'].attrs['dimname']  = 'Time, Baseline'
+
             else:
                 if not np.array_equal(df['sec1970'][:], fdata.time):
                     emsg = 'Time not match between M%03d and M001'%(beam_list[ii])
@@ -85,16 +94,12 @@ def convert_to_tl(data_path, data_file, output_path, dec0, feed_rotation=0,
         
             df['vis'][...,ii] = fdata.data
             df['vis_mask'][..., ii] = fdata.mask.astype('int')
+
+            del fdata
+            gc.collect()
             
             print
         
-        # get ra dec according to meridian scan
-        ra, dec = get_pointing_meridian_scan(fdata.time, dec0, 
-                time_format='unix', feed_rotation=feed_rotation)
-
-        df['ns_on'] = fdata.cal_on
-        df['ns_on'].attrs['dimname']  = 'Time, Baseline'
-
         df['ra'] = ra
         df['ra'].attrs['dimname']  = 'Time, Baseline'
 
