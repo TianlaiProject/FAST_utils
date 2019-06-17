@@ -69,6 +69,8 @@ def convert_to_tl(data_path, data_file, output_path, dec0, feed_rotation=0,
                 df.attrs['sec1970'] = fdata.time[0]
                 df['sec1970'] = fdata.time
                 df['sec1970'].attrs['dimname'] = 'Time, '
+                df['pol'] = np.array([0, 1, 2, 3])
+                df['pol'].attrs['dimname'] = 'Polarization, '
                 
                 nfreq = fdata.freq.shape[0]
                 df.attrs['nfreq'] = nfreq
