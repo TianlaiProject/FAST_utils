@@ -52,7 +52,7 @@ def convert_to_tl(data_path, data_file, output_path, dec0, feed_rotation=0,
             if degrade_freq_resol is not None:
                 fdata.rebin_freq(degrade_freq_resol)
             print fdata.history
-            history += fdata.history
+            if ii == 0: history += fdata.history
         
             if data_shp is None:
                 data_shp = fdata.data.shape + (beam_n, )
