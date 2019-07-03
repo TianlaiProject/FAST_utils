@@ -59,7 +59,7 @@ def convert_to_tl(data_path, data_file, output_path, dec0, feed_rotation=0,
                 df.create_dataset('vis', dtype=fdata.data.dtype, shape=data_shp)
                 df['vis'].attrs['dimname'] = 'Time, Frequency, Polarization, Baseline'
             
-                df.create_dataset('vis_mask', dtype=fdata.data.dtype, shape=data_shp)
+                df.create_dataset('vis_mask', dtype='int', shape=data_shp)
                 df['vis_mask'].attrs['dimname'] = 'Time, Frequency, Polarization, Baseline'
                 
                 obstime = fdata.date_obs.datetime.strftime('%Y/%m/%d %H:%M:%S')
