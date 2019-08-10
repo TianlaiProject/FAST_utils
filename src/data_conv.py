@@ -31,7 +31,7 @@ _Location = EarthLocation.from_geodetic(_Lon, _Lat)
 
 
 
-def convert_to_tl(data_path, data_file, output_path, dec0, feed_rotation=0,
+def convert_to_tl(data_path, data_file, output_path, alt, az, feed_rotation=0,
                   beam_list = [0, ], block_list = [0, 1],
                   fmin=None, fmax=None, degrade_freq_resol=None,
                   noise_cal = [8, 1, 0]):
@@ -102,7 +102,17 @@ def convert_to_tl(data_path, data_file, output_path, dec0, feed_rotation=0,
             
             print
         
-        df['ra'] = ra.astype('float32')
+        # get ra dec according to meridian scan
+        beam_indx = [x-1 for x in beam_list]
+        ra, dec = get_pointing_meridian_scan(fdata.time, alt, az,
+                time_format='unix', feed_rotation=feed_rotation)
+        ra  = ra[:,  beam_indx]
+        dec = dec[:, beam_indx]
+
+        df['ns_on'] = (fdata.cal_on[:, None] * np.ones(beam_n)[None, :]).astype('bool')
+        df['ns_on'].attrs['dimname']  = 'Time, Baseline'
+
+        df['ra'] = ra
         df['ra'].attrs['dimname']  = 'Time, Baseline'
 
         df['dec'] = dec.astype('float32')
@@ -228,7 +238,7 @@ def offset_by(skycoord, posang, distance):
 
     return SkyCoord(outlon, outlat, frame=skycoord.frame)
 
-def get_pointing_meridian_scan(time, dec0, time_format='unix', feed_rotation=0):
+def get_pointing_meridian_scan(time, alt, az, time_format='unix', feed_rotation=0):
     
     '''
     estimate the pointing RA Dec accoriding obs time and init Dec 
@@ -237,13 +247,19 @@ def get_pointing_meridian_scan(time, dec0, time_format='unix', feed_rotation=0):
     time: obs time
     '''
     
+    alt = alt * np.ones_like(time)
+    az  = az  * np.ones_like(time)
     time = Time(time, format=time_format, location=_Location)
+    c0   = SkyCoord(alt=alt*u.deg, az=az*u.deg, frame='altaz', 
+                    location=_Location, obstime=time)
+    c0   = c0.transform_to('icrs')
 
-    # pointing at meridian, RA = LST
-    ra0  = time.sidereal_time('apparent').to(u.deg)
-    dec0 = np.ones_like(ra0) * dec0
+    ## pointing at meridian, RA = LST
+    #ra0  = time.sidereal_time('apparent').to(u.deg)
+    #dec0 = np.ones_like(ra0) * dec0
+
     # pointing RA Dec of the center beam
-    c0 = SkyCoord(ra0, dec0)
+    #c0 = SkyCoord(ra0, dec0)
 
     # position of 19 beam in unit or arcmin, from Wenkai's calculation
     # already rotated by 23.4 deg
