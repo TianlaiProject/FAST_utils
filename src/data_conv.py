@@ -57,10 +57,10 @@ def convert_to_tl(data_path, data_file, output_path, dec0, feed_rotation=0,
         
             if data_shp is None:
                 data_shp = fdata.data.shape + (beam_n, )
-                df.create_dataset('vis', dtype=fdata.data.dtype, shape=data_shp)
+                df.create_dataset('vis', dtype='float32', shape=data_shp)
                 df['vis'].attrs['dimname'] = 'Time, Frequency, Polarization, Baseline'
             
-                df.create_dataset('vis_mask', dtype=fdata.data.dtype, shape=data_shp)
+                df.create_dataset('vis_mask', dtype='uint8', shape=data_shp)
                 df['vis_mask'].attrs['dimname'] = 'Time, Frequency, Polarization, Baseline'
                 
                 obstime = fdata.date_obs.datetime.strftime('%Y/%m/%d %H:%M:%S')
@@ -94,18 +94,18 @@ def convert_to_tl(data_path, data_file, output_path, dec0, feed_rotation=0,
                     raise ValueError(emsg)
 
         
-            df['vis'][...,ii] = fdata.data
-            df['vis_mask'][..., ii] = fdata.mask.astype('int')
+            df['vis'][...,ii] = fdata.data.astype('float32')
+            df['vis_mask'][..., ii] = fdata.mask.astype('uint8')
 
             del fdata
             gc.collect()
             
             print
         
-        df['ra'] = ra
+        df['ra'] = ra.astype('float32')
         df['ra'].attrs['dimname']  = 'Time, Baseline'
 
-        df['dec'] = dec
+        df['dec'] = dec.astype('float32')
         df['dec'].attrs['dimname'] = 'Time, Baseline'
 
         df.attrs['history'] = history

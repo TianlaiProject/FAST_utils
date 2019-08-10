@@ -74,6 +74,7 @@ class FASTfits_Spec(object):
         data = data_sets.field('DATA')[:, f_st: f_ed, :]
         #data = np.swapaxes(data, -1,-2)
         data *= 1.e-10 # raw data have huge value, reacaled by 10^-10.
+        #data = data.astype('float32')
         mask = np.zeros(data.shape).astype('bool')
         
         time_bins = float(data.shape[1])
