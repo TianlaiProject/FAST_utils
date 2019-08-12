@@ -78,11 +78,15 @@ def convert_to_tl(data_path, data_file, output_path, alt, az, feed_rotation=0,
                 df.attrs['freqstart'] = fdata.freq[0]
                 df.attrs['freqstep'] = fdata.freq[1] - fdata.freq[0]
 
-                # get ra dec according to meridian scan
-                ra, dec = get_pointing_meridian_scan(fdata.time, dec0, 
+                ## get ra dec according to meridian scan
+                #ra, dec = get_pointing_meridian_scan(fdata.time, dec0, 
+                #        time_format='unix', feed_rotation=feed_rotation)
+                ra, dec = get_pointing_meridian_scan(fdata.time, alt, az,
                         time_format='unix', feed_rotation=feed_rotation)
 
-                df['ns_on'] = fdata.cal_on
+                cal_on = fdata.cal_on[:, None] * np.ones(beam_n)[None, :]
+                cal_on = cal_on.astype('bool')
+                df['ns_on'] = cal_on
                 df['ns_on'].attrs['dimname']  = 'Time, Baseline'
 
             else:
@@ -104,13 +108,8 @@ def convert_to_tl(data_path, data_file, output_path, alt, az, feed_rotation=0,
         
         # get ra dec according to meridian scan
         beam_indx = [x-1 for x in beam_list]
-        ra, dec = get_pointing_meridian_scan(fdata.time, alt, az,
-                time_format='unix', feed_rotation=feed_rotation)
         ra  = ra[:,  beam_indx]
         dec = dec[:, beam_indx]
-
-        df['ns_on'] = (fdata.cal_on[:, None] * np.ones(beam_n)[None, :]).astype('bool')
-        df['ns_on'].attrs['dimname']  = 'Time, Baseline'
 
         df['ra'] = ra
         df['ra'].attrs['dimname']  = 'Time, Baseline'
